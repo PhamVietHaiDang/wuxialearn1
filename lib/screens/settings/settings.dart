@@ -5,10 +5,7 @@ import 'package:hsk_learner/sql/preferences_sql.dart';
 import 'package:hsk_learner/sql/sql_helper.dart';
 import '../../sql/character_stokes_sql.dart';
 import '../../utils/platform_info.dart';
-import 'backup.dart';
 import 'preferences.dart';
-import 'package:pubspec_parse/pubspec_parse.dart';
-import 'package:flutter/services.dart';
 
 class Settings extends StatefulWidget {
   const Settings({Key? key}) : super(key: key);
@@ -38,8 +35,6 @@ class _SettingsState extends State<Settings> {
   List<String> homePages = ["home", "review", "stats"];
   String defaultCourse = Preferences.getPreference("default_course");
   String defaultHomePage = Preferences.getPreference("default_home_page");
-  String version = '1.0.13';
-  int clicks = 0;
   bool showDebugOptions = false;
   bool isDownloading = false;
   bool isDeleting = false;
@@ -73,8 +68,8 @@ class _SettingsState extends State<Settings> {
   _showDefaultCourseActionSheet<bool>(BuildContext context) {
     showCupertinoModalPopup<bool>(
       context: context,
-      builder:
-          (BuildContext context) => CupertinoActionSheet(
+      builder: (BuildContext context) =>
+          CupertinoActionSheet(
             //title: const Text('Courses'),
             title: const Text('Select a default course'),
             actions: List<CupertinoActionSheetAction>.generate(courses.length, (
@@ -103,8 +98,8 @@ class _SettingsState extends State<Settings> {
   _showDefaultHomePageActionSheet<bool>(BuildContext context) {
     showCupertinoModalPopup<bool>(
       context: context,
-      builder:
-          (BuildContext context) => CupertinoActionSheet(
+      builder: (BuildContext context) =>
+          CupertinoActionSheet(
             //title: const Text('Courses'),
             title: const Text('Select a default home page'),
             actions: List<CupertinoActionSheetAction>.generate(
@@ -136,8 +131,8 @@ class _SettingsState extends State<Settings> {
   _showThemeSelectionDialog(BuildContext context) {
     showCupertinoModalPopup(
       context: context,
-      builder:
-          (BuildContext context) => CupertinoActionSheet(
+      builder: (BuildContext context) =>
+          CupertinoActionSheet(
             title: const Text('Select Theme'),
             actions: [
               CupertinoActionSheetAction(
@@ -175,8 +170,6 @@ class _SettingsState extends State<Settings> {
     );
   }
 
-  static const String backupFailedMessage =
-      "backup failed  (Folder may be protected. Try using the documents directory)";
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
@@ -330,165 +323,63 @@ class _SettingsState extends State<Settings> {
                       Row(
                         children: [
                           CupertinoButton(
-                            onPressed:
-                                isDataDownloaded
-                                    ? null
-                                    : () async {
-                                      setState(() {
-                                        isDownloading = true;
-                                      });
-                                      CharacterStokesSql.createTable()
-                                          .then(
-                                            (value) {
-                                              SharedPrefs.prefs.setBool(
-                                                'character_stroke_data_downloaded',
-                                                true,
-                                              );
-                                              setState(() {
-                                                isDataDownloaded = true;
-                                              });
-                                              showCupertinoDialog(
-                                                barrierDismissible: true,
-                                                context: context,
-                                                builder: (context) {
-                                                  return const CupertinoAlertDialog(
-                                                    content: Text(
-                                                      "Download succeeded",
-                                                    ),
-                                                  );
-                                                },
-                                              );
-                                            },
-                                            onError: (e) {
-                                              showCupertinoDialog(
-                                                barrierDismissible: true,
-                                                context: context,
-                                                builder: (context) {
-                                                  return const CupertinoAlertDialog(
-                                                    content: Text(
-                                                      "Download failed",
-                                                    ),
-                                                  );
-                                                },
-                                              );
-                                            },
-                                          )
-                                          .whenComplete(() {
+                            onPressed: isDataDownloaded
+                                ? null
+                                : () async {
+                                    setState(() {
+                                      isDownloading = true;
+                                    });
+                                    CharacterStokesSql.createTable()
+                                        .then(
+                                          (value) {
+                                            SharedPrefs.prefs.setBool(
+                                              'character_stroke_data_downloaded',
+                                              true,
+                                            );
                                             setState(() {
-                                              isDownloading = false;
+                                              isDataDownloaded = true;
                                             });
+                                            showCupertinoDialog(
+                                              barrierDismissible: true,
+                                              context: context,
+                                              builder: (context) {
+                                                return const CupertinoAlertDialog(
+                                                  content: Text(
+                                                    "Download succeeded",
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          },
+                                          onError: (e) {
+                                            showCupertinoDialog(
+                                              barrierDismissible: true,
+                                              context: context,
+                                              builder: (context) {
+                                                return const CupertinoAlertDialog(
+                                                  content: Text(
+                                                    "Download failed",
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          },
+                                        )
+                                        .whenComplete(() {
+                                          setState(() {
+                                            isDownloading = false;
                                           });
-                                    },
+                                        });
+                                  },
                             child: const Text("Download"),
                           ),
-                          if (isDownloading) const CupertinoActivityIndicator(),
+                          if (isDownloading)
+                            const CupertinoActivityIndicator(),
                         ],
                       ),
                     ],
                   ),
                 ],
-              ),
-              Visibility(
-                //disabled for ios as it is currently not working
-                visible: !PlatformInfo.isIOs(),
-                child: Column(
-                  children: [
-                    const Text("Backup"),
-                    Row(
-                      children: [
-                        const Text("Backup data"),
-                        IconButton(
-                          onPressed: () async {
-                            Future<bool> updated =
-                                Backup.startBackupWithFileSelection();
-                            updated.then(
-                              (val) => showCupertinoDialog(
-                                barrierDismissible: true,
-                                context: context,
-                                builder: (context) {
-                                  late final String text;
-                                  val == true
-                                      ? text = "backup succeeded"
-                                      : text = backupFailedMessage;
-                                  return CupertinoAlertDialog(
-                                    content: Text(text),
-                                  );
-                                },
-                              ),
-                              onError:
-                                  (e) => showCupertinoDialog(
-                                    barrierDismissible: true,
-                                    context: context,
-                                    builder: (context) {
-                                      return const CupertinoAlertDialog(
-                                        content: Text(backupFailedMessage),
-                                      );
-                                    },
-                                  ),
-                            );
-                          },
-                          icon: const Icon(Icons.add),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        const Text("restore from backup"),
-                        IconButton(
-                          onPressed: () async {
-                            bool updated =
-                                await Backup.restoreBackupFromUserFile();
-                            setState(() {});
-                            showCupertinoDialog(
-                              barrierDismissible: true,
-                              context: context,
-                              builder: (context) {
-                                late final String text;
-                                updated
-                                    ? text = "backup succeeded"
-                                    : text = backupFailedMessage;
-                                return CupertinoAlertDialog(
-                                  content: Text(text),
-                                );
-                              },
-                            );
-                          },
-                          icon: const Icon(Icons.add),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  clicks++;
-                  if (clicks == 5) {
-                    setState(() {
-                      showDebugOptions = true;
-                    });
-                  }
-                },
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const Text("Version "),
-                    FutureBuilder<String>(
-                      future: _getVersion(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const CupertinoActivityIndicator();
-                        } else if (snapshot.hasError) {
-                          return const Text("Error");
-                        } else {
-                          return Text(snapshot.data ?? 'Unknown');
-                        }
-                      },
-                    ),
-                  ],
-                ),
               ),
               const SizedBox(height: 10),
               Visibility(
@@ -632,16 +523,18 @@ class _SettingsState extends State<Settings> {
                       children: [
                         const Text("Refresh DB (lose all data)"),
                         TextButton(
-                            onPressed: isDeleting ? null : () async {
-                            setState(() {
-                              isDeleting = true;
-                            });
-                            await SQLHelper.refreshDB();
-                            setState(() {
-                              isDeleting = false;
-                            });
-                            },
-                            child: const Text("Refresh"),
+                          onPressed: isDeleting
+                              ? null
+                              : () async {
+                                  setState(() {
+                                    isDeleting = true;
+                                  });
+                                  await SQLHelper.refreshDB();
+                                  setState(() {
+                                    isDeleting = false;
+                                  });
+                                },
+                          child: const Text("Refresh"),
                         ),
                       ],
                     ),
@@ -700,16 +593,15 @@ class _SettingsState extends State<Settings> {
                                     );
                                   },
                                 ),
-                                onError:
-                                    (e) => showCupertinoDialog(
-                                      barrierDismissible: true,
-                                      context: context,
-                                      builder: (context) {
-                                        return const CupertinoAlertDialog(
-                                          content: Text("updated: false"),
-                                        );
-                                      },
-                                    ),
+                                onError: (e) => showCupertinoDialog(
+                                  barrierDismissible: true,
+                                  context: context,
+                                  builder: (context) {
+                                    return const CupertinoAlertDialog(
+                                      content: Text("updated: false"),
+                                    );
+                                  },
+                                ),
                               );
                             },
                             icon: const Icon(Icons.add),
@@ -726,13 +618,6 @@ class _SettingsState extends State<Settings> {
         ),
       ),
     );
-  }
-
-  Future<String> _getVersion() async {
-    final content = await rootBundle.loadString('pubspec.yaml');
-    final pubspec = Pubspec.parse(content);
-    final version = pubspec.version?.toString() ?? 'Unknown';
-    return version.split('+').first;
   }
 }
 

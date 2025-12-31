@@ -111,9 +111,8 @@ class _LoadAppState extends State<LoadApp> {
       final bool isFirstRun = Preferences.getPreference("isFirstRun");
       if (isFirstRun) {
         if (widget.fdroid) {
-          Future.delayed(const Duration(seconds: 0)).then((_) {
-            _showActionSheet(context);
-          });
+          setFirstRun();
+          disableCheckForUpdate();
         } else {
           setFirstRun();
           enableCheckForUpdate();
@@ -124,37 +123,6 @@ class _LoadAppState extends State<LoadApp> {
         return const MyHomePage();
       }
     }
-  }
-
-  void _showActionSheet<bool>(BuildContext context) {
-    showCupertinoModalPopup<bool>(
-      context: context,
-      builder:
-          (BuildContext context) => CupertinoActionSheet(
-            title: const Text('Check for update on app start? (recommended)'),
-            actions: [
-              CupertinoActionSheetAction(
-                isDefaultAction: true,
-                onPressed: () {
-                  setFirstRun();
-                  enableCheckForUpdate();
-                  Navigator.pop(context, true);
-                  checkForDbUpdate();
-                },
-                child: const Text("Yes"),
-              ),
-              CupertinoActionSheetAction(
-                isDefaultAction: true,
-                onPressed: () {
-                  setFirstRun();
-                  disableCheckForUpdate();
-                  Navigator.pop(context, true);
-                },
-                child: const Text("No"),
-              ),
-            ],
-          ),
-    );
   }
 
   void setFirstRun() {

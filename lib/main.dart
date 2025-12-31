@@ -72,23 +72,22 @@ class _MyAppState extends State<MyApp> {
               ),
             ),
             child: CupertinoApp(
+              debugShowCheckedModeBanner: false,
               theme: CupertinoThemeData(
                 brightness: brightness,
                 primaryColor: Colors.blue,
                 textTheme: CupertinoTextThemeData(
                   textStyle: TextStyle(
                     fontFamily: 'Roboto',
-                    color:
-                        brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black,
+                    color: brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
                   ),
                   actionTextStyle: TextStyle(
                     fontFamily: 'Roboto',
-                    color:
-                        brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black,
+                    color: brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
                   ),
                   navActionTextStyle: const TextStyle(
                     fontFamily: 'Roboto',
@@ -96,31 +95,27 @@ class _MyAppState extends State<MyApp> {
                   ),
                   navLargeTitleTextStyle: TextStyle(
                     fontFamily: 'Roboto',
-                    color:
-                        brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black,
+                    color: brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
                   ),
                   navTitleTextStyle: TextStyle(
                     fontFamily: 'Roboto',
-                    color:
-                        brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black,
+                    color: brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
                   ),
                   pickerTextStyle: TextStyle(
                     fontFamily: 'Roboto',
-                    color:
-                        brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black,
+                    color: brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
                   ),
                   dateTimePickerTextStyle: TextStyle(
                     fontFamily: 'Roboto',
-                    color:
-                        brightness == Brightness.dark
-                            ? Colors.white
-                            : Colors.black,
+                    color: brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black,
                   ),
                 ),
               ),
