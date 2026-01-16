@@ -1,38 +1,18 @@
 import 'package:flutter/cupertino.dart';
 import 'package:hsk_learner/screens/courses/hsk_course.dart';
 
-import '../settings/preferences.dart';
-import 'custom_course.dart';
-
-class CourseHome extends StatefulWidget {
+class CourseHome extends StatelessWidget {
   const CourseHome({super.key});
 
   @override
-  State<CourseHome> createState() => _CourseHomeState();
-}
-
-class _CourseHomeState extends State<CourseHome> {
-  String course = Preferences.getPreference("default_course");
-  List<String> courses = Preferences.getPreference("courses");
-  @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
-        //backgroundColor: Colors.transparent,
+    return const CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
         middle: Text("Home"),
       ),
       child: SafeArea(
-        child: switch (course) {
-          'hsk' => HSKCourseView(changeCourse: changeCourse),
-          _ => CustomCourse(courseName: course, changeCourse: changeCourse),
-        },
+        child: HSKCourseView(),
       ),
     );
-  }
-
-  void changeCourse(String courseName) {
-    setState(() {
-      course = courseName;
-    });
   }
 }

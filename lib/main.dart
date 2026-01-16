@@ -120,7 +120,7 @@ class _MyAppState extends State<MyApp> {
                 ),
               ),
               scrollBehavior: const CupertinoScrollBehavior(),
-              title: 'Wuxia Learn',
+              title: 'HSK learning',
               home: LoadApp(fdroid: widget.fdroid),
               //home: const MyStatefulWidget(),
             ),
@@ -143,7 +143,7 @@ class MyApp2 extends StatelessWidget {
       theme: ThemeData.light(useMaterial3: false),
       darkTheme: ThemeData.dark(useMaterial3: false),
       themeMode: ThemeMode.system,
-      title: 'Wuxia Learn',
+      title: 'HSK learning',
       home: const LoadApp(fdroid: true),
       //home: const MyStatefulWidget(),
     );

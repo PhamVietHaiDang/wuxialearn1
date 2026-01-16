@@ -8,7 +8,6 @@ class CourseView extends StatefulWidget {
   final Future<List<Map<String, dynamic>>> unitList;
   final List<Widget> Function(List<Map<String, dynamic>> hskList) gridItems;
   final Function update;
-  final void Function(String courseName) changeCourse;
   final String courseName;
   const CourseView({
     super.key,
@@ -16,7 +15,6 @@ class CourseView extends StatefulWidget {
     required this.gridItems,
     required this.update,
     required this.courseName,
-    required this.changeCourse,
   });
 
   @override
@@ -33,7 +31,7 @@ class _CourseViewState extends State<CourseView> {
       children: [
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(left: 20.0, right: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: FutureBuilder<List<Map<String, dynamic>>>(
               future: widget.unitList,
               builder: (
@@ -44,45 +42,11 @@ class _CourseViewState extends State<CourseView> {
                   List<Map<String, dynamic>> courseList = snapshot.data!;
                   hskLevel = getHskLevel(courseList);
                   return CustomScrollView(
-                    scrollDirection: Axis.vertical,
-                    physics: const ScrollPhysics(),
+                    physics: const BouncingScrollPhysics(),
                     slivers: [
-                      SliverPadding(
-                        padding: const EdgeInsets.only(top: 10, bottom: 20),
-                        sliver: SliverToBoxAdapter(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              TextButton(
-                                onPressed: () {
-                                  _showActionSheet(context);
-                                },
-                                child: const Text("Change Course"),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  color:
-                                      Theme.of(context).scaffoldBackgroundColor,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10.0,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: <Widget>[
-                                    Text(
-                                      '${widget.courseName} course',
-                                      style: const TextStyle(fontSize: 18),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      const SliverToBoxAdapter(child: SizedBox(height: 16)),
                       ...widget.gridItems(courseList),
+                      const SliverToBoxAdapter(child: SizedBox(height: 100)),
                     ],
                   );
                 } else {
@@ -93,61 +57,6 @@ class _CourseViewState extends State<CourseView> {
           ),
         ),
       ],
-    );
-  }
-
-  _showActionSheet<bool>(BuildContext context) {
-    showCupertinoModalPopup<bool>(
-      context: context,
-      builder:
-          (BuildContext context) => CupertinoActionSheet(
-            //title: const Text('Courses'),
-            title: const Text('Select a course'),
-            actions: List<CupertinoActionSheetAction>.generate(courses.length, (
-              index,
-            ) {
-              return CupertinoActionSheetAction(
-                isDefaultAction: true,
-                onPressed: () {
-                  Navigator.pop(context);
-                  if (courses[index] != widget.courseName) {
-                    final allowSkipUnits = Preferences.getPreference(
-                      "allow_skip_units",
-                    );
-                    var allowedChangeCourse = hskLevel > 2 || allowSkipUnits;
-                    if (allowedChangeCourse) {
-                      widget.changeCourse(courses[index]);
-                    } else {
-                      showCupertinoDialog(
-                        barrierDismissible: true,
-                        context: context,
-                        builder: (context) {
-                          return CupertinoAlertDialog(
-                            content: const Text(
-                              "You need to complete HSK 2 to start this course",
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            actions: [
-                              CupertinoDialogAction(
-                                /// This parameter indicates this action is the default,
-                                /// and turns the action's text to bold text.
-                                isDefaultAction: true,
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    }
-                  }
-                },
-                child: Text(courses[index]),
-              );
-            }),
-          ),
     );
   }
 
@@ -193,45 +102,94 @@ class GridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isUnitOpen =
-        allowSkipUnits || index == 0 || unitList[index - 1]["completed"] == 1;
-    final Color unitColor =
-        index == 0 || unitList[index - 1]["completed"] == 1
-            ? Colors.green
-            : Colors.blue;
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: unitColor, width: 3),
-      ),
-      child: TextButton(
-        style: ButtonStyle(
-          overlayColor: WidgetStateProperty.all(Colors.transparent),
-        ),
-        onPressed: () {
-          if (isUnitOpen) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (context) => UnitView(
-                      unit: unitList[index]["unit_id"],
-                      name: unitList[index]["unit_name"],
-                      updateUnits: updateUnits,
-                      courseName: courseName,
-                    ),
+    final bool isCompleted = unitList[index]["completed"] == 1;
+    final bool isUnitOpen = allowSkipUnits || index == 0 || unitList[index - 1]["completed"] == 1;
+    
+    final Color activeColor = Colors.blue.shade600;
+    final Color completedColor = Colors.green.shade500;
+    final Color lockedColor = Colors.grey.shade300;
+
+    final Color statusColor = isCompleted ? completedColor : (isUnitOpen ? activeColor : lockedColor);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: isUnitOpen ? statusColor.withOpacity(0.1) : Colors.transparent,
+                border: Border.all(
+                  color: statusColor,
+                  width: 4,
+                ),
+                boxShadow: isUnitOpen && !isCompleted ? [
+                  BoxShadow(
+                    color: statusColor.withOpacity(0.2),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  )
+                ] : null,
               ),
-            ).then((_) {
-              updateUnits();
-            });
-          }
-        },
-        child: Text(
-          unitList[index]["unit_name"],
-          style: TextStyle(color: unitColor, fontSize: 18),
-          overflow: TextOverflow.ellipsis,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: isUnitOpen ? () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UnitView(
+                          unit: unitList[index]["unit_id"],
+                          name: unitList[index]["unit_name"],
+                          updateUnits: updateUnits,
+                          courseName: courseName,
+                        ),
+                      ),
+                    ).then((_) => updateUnits());
+                  } : null,
+                  child: Center(
+                    child: Icon(
+                      isCompleted ? Icons.check : (isUnitOpen ? Icons.play_arrow_rounded : Icons.lock_outline_rounded),
+                      color: statusColor,
+                      size: 36,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            if (isCompleted)
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.star, color: Colors.white, size: 16),
+                ),
+              ),
+          ],
         ),
-      ),
+        const SizedBox(height: 10),
+        Text(
+          unitList[index]["unit_name"],
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: isUnitOpen ? FontWeight.w600 : FontWeight.w400,
+            color: isUnitOpen ? Colors.black87 : Colors.grey,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -20,7 +20,7 @@
     "type": "bool"
   },
   "courses": {
-    "value": "[\"hsk\",\"wuxia\"]",
+    "value": "[\"hsk\"]",
     "type": "json"
   },
   "default_course": {

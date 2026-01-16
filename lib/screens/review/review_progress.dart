@@ -10,7 +10,7 @@ class ReviewProgress extends StatefulWidget {
 }
 
 class _ReviewProgressState extends State<ReviewProgress> {
-  List<String> deckNames = ["hsk", "wuxia", "any"];
+  List<String> deckNames = ["hsk", "any"];
   String deckName = "hsk";
   late Future<List<Map<String, dynamic>>> progressFuture;
   @override

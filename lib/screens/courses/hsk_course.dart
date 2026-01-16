@@ -5,8 +5,7 @@ import '../settings/preferences.dart';
 import 'course_view.dart';
 
 class HSKCourseView extends StatefulWidget {
-  final void Function(String courseName) changeCourse;
-  const HSKCourseView({Key? key, required this.changeCourse}) : super(key: key);
+  const HSKCourseView({Key? key}) : super(key: key);
 
   @override
   State<HSKCourseView> createState() => _HSKCourseViewState();
@@ -49,108 +48,87 @@ class _HSKCourseViewState extends State<HSKCourseView> {
           hskIsCompletedList.add(hskList[i - 1]["completed"] == 1);
         }
         if (i == hskList.length - 1) {
-          //+1 because we are using the i from last of the current unit rather than the first of the next unit
           hskListUnitLengths.add(i - hskListOffset.last + 1);
           hskIsCompletedList.add(hskList[i]["completed"] == 1);
         }
       }
       for (int i = 0; i < hskListOffset.length; i++) {
+        // We keep the real hskLevel for logic (like TestOut)
+        int realHskLevel = hskList[hskListOffset[i]]["hsk"];
+        
         widgets.add(
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(vertical: 15),
-            sliver: SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Visibility(
-                      maintainAnimation: true,
-                      maintainState: true,
-                      maintainSize: true,
-                      visible: false,
-                      child: TextButton(
-                        onPressed: () {},
-                        child: const Text("Test Out"),
-                      ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 32, 8, 16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade700,
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                          borderRadius: BorderRadius.circular(7.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.5),
-                              spreadRadius: 3,
-                              blurRadius: 5,
-                              offset: const Offset(
-                                0,
-                                3,
-                              ), // changes position of shadow
-                            ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 8.0,
-                            horizontal: 20.0,
-                          ),
-                          child: Text(
-                            "hsk ${i + 2}",
-                            style: const TextStyle(fontSize: 20),
-                          ),
-                        ),
-                      ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    "HSK ${i + 1}", // This masks the level for the UI
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
                     ),
-                    Visibility(
-                      maintainAnimation: true,
-                      maintainState: true,
-                      maintainSize: true,
-                      visible: !hskIsCompletedList[i],
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => TestOut(hsk: i + 2),
-                            ),
-                          ).then((_) {
-                            setState(() {
-                              unitNumList = getUnitNum();
-                            });
+                  ),
+                  const Spacer(),
+                  if (!hskIsCompletedList[i])
+                    TextButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TestOut(hsk: realHskLevel),
+                          ),
+                        ).then((_) {
+                          setState(() {
+                            unitNumList = getUnitNum();
                           });
-                        },
-                        child: const Text("Test Out"),
+                        });
+                      },
+                      icon: const Icon(Icons.bolt, size: 18),
+                      label: const Text("Test Out"),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.orange.shade800,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
                       ),
                     ),
-                  ],
-                ),
+                ],
               ),
             ),
           ),
         );
         widgets.add(
-          SliverGrid(
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 100.0,
-              mainAxisSpacing: 30.0,
-              crossAxisSpacing: 30.0,
-              childAspectRatio: 1,
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 150.0,
+                mainAxisSpacing: 24.0,
+                crossAxisSpacing: 16.0,
+                childAspectRatio: 0.85,
+              ),
+              delegate: SliverChildBuilderDelegate((
+                BuildContext context,
+                int index,
+              ) {
+                return GridItem(
+                  index: index + hskListOffset[i],
+                  unitList: hskList,
+                  updateUnits: updateUnits,
+                  courseName: "hsk",
+                  allowSkipUnits: allowSkipUnits,
+                );
+              }, childCount: hskListUnitLengths[i]),
             ),
-            delegate: SliverChildBuilderDelegate((
-              BuildContext context,
-              int index,
-            ) {
-              return GridItem(
-                index: index + hskListOffset[i],
-                unitList: hskList,
-                updateUnits: updateUnits,
-                courseName: "hsk",
-                allowSkipUnits: allowSkipUnits,
-              );
-            }, childCount: hskListUnitLengths[i]),
           ),
         );
       }
@@ -162,7 +140,6 @@ class _HSKCourseViewState extends State<HSKCourseView> {
       gridItems: gridItems,
       update: updateUnits,
       courseName: "hsk",
-      changeCourse: widget.changeCourse,
     );
   }
 }

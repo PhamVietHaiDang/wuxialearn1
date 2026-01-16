@@ -26,8 +26,6 @@ class HskListview extends StatelessWidget {
     required this.showPinyin,
   }) : super(key: key);
 
-  get flutterTts => null;
-
   @override
   Widget build(BuildContext context) {
     FlutterTts flutterTts = FlutterTts();
@@ -37,9 +35,7 @@ class HskListview extends StatelessWidget {
 
     setLanguage();
     Future speak(String text) async {
-      //await flutterTts.setLanguage("zh-CN");
-      var result = await flutterTts.speak(text);
-      //if (result == 1) setState(() => ttsState = TtsState.playing);
+      await flutterTts.speak(text);
     }
 
     playCallback(String str) {
@@ -212,9 +208,7 @@ class PrototypeHorizontalHskListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 0.0,
-      ), // this padding is needed fo some reason
+      padding: const EdgeInsets.symmetric(horizontal: 0.0),
       child: Container(
         decoration: BoxDecoration(
           borderRadius:
@@ -261,62 +255,65 @@ class HskListviewItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          //color: Colors.transparent,
           border:
               separator
                   ? const Border(
-                    bottom: BorderSide(width: 1.5, color: Color(0xFFECECEC)),
+                    bottom: BorderSide(width: 1.0, color: Color(0xFFEEEEEE)),
                   )
                   : const Border(),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Column(
-                  children: [
-                    Visibility(
-                      visible: showPinyin,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Visibility(
+                    visible: showPinyin,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 2.0),
                       child: Text(
                         wordItem.pinyin,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 14),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.blueGrey,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ),
-                    Text(
-                      wordItem.hanzi,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 25),
-                    ),
-                  ],
-                ),
-                Visibility(
-                  visible: showTranslation,
-                  child: Text(
-                    wordItem.translation,
-                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    wordItem.hanzi,
                     style: const TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF999999),
+                      fontSize: 26,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                ),
-              ],
+                  if (showTranslation) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      wordItem.translation,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
-            showPlayButton
-                ? IconButton(
-                  onPressed: () {
-                    callback(wordItem.hanzi);
-                  },
-                  icon: const Icon(Icons.volume_up),
-                )
-                : const SizedBox(height: 0),
+            if (showPlayButton)
+              IconButton(
+                onPressed: () => callback(wordItem.hanzi),
+                icon: const Icon(Icons.volume_up, color: Colors.blue),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
           ],
         ),
       ),

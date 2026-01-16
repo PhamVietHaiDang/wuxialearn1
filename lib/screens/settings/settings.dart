@@ -33,18 +33,12 @@ class _SettingsState extends State<Settings> {
   );
   List<String> courses = Preferences.getPreference("courses");
   List<String> homePages = ["home", "review", "stats"];
-  String defaultCourse = Preferences.getPreference("default_course");
   String defaultHomePage = Preferences.getPreference("default_home_page");
   bool showDebugOptions = false;
   bool isDownloading = false;
   bool isDeleting = false;
   bool isDataDownloaded =
       SharedPrefs.prefs.getBool('character_stroke_data_downloaded') ?? false;
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   setSettingBool({
     required String name,
@@ -65,42 +59,11 @@ class _SettingsState extends State<Settings> {
     Preferences.setPreference(name: name, value: value);
   }
 
-  _showDefaultCourseActionSheet<bool>(BuildContext context) {
-    showCupertinoModalPopup<bool>(
-      context: context,
-      builder: (BuildContext context) =>
-          CupertinoActionSheet(
-            //title: const Text('Courses'),
-            title: const Text('Select a default course'),
-            actions: List<CupertinoActionSheetAction>.generate(courses.length, (
-              index,
-            ) {
-              return CupertinoActionSheetAction(
-                isDefaultAction: true,
-                onPressed: () {
-                  setSettingString(
-                    name: 'default_course',
-                    type: 'string',
-                    value: courses[index],
-                  );
-                  Navigator.pop(context, true);
-                  setState(() {
-                    defaultCourse = Preferences.getPreference("default_course");
-                  });
-                },
-                child: Text(courses[index]),
-              );
-            }),
-          ),
-    );
-  }
-
   _showDefaultHomePageActionSheet<bool>(BuildContext context) {
     showCupertinoModalPopup<bool>(
       context: context,
       builder: (BuildContext context) =>
           CupertinoActionSheet(
-            //title: const Text('Courses'),
             title: const Text('Select a default home page'),
             actions: List<CupertinoActionSheetAction>.generate(
               homePages.length,
@@ -173,468 +136,159 @@ class _SettingsState extends State<Settings> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
+      backgroundColor: CupertinoColors.systemGroupedBackground,
       navigationBar: const CupertinoNavigationBar(middle: Text("Settings")),
       child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: ListView(
-            children: [
-              const SizedBox(height: 20),
-              Column(
-                children: [
-                  const Text("Review"),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Show translations in preview"),
-                      CupertinoSwitch(
-                        // This bool value toggles the switch.
-                        value: translation,
-                        activeTrackColor: CupertinoColors.activeBlue,
-                        onChanged: (bool value) {
-                          setSettingBool(
-                            name: "showTranslations",
-                            type: "bool",
-                            value: value,
-                          );
-                          setState(() => translation = value);
-                        },
-                      ),
-                    ],
+        child: ListView(
+          children: [
+            CupertinoListSection.insetGrouped(
+              header: const Text("REVIEW"),
+              children: [
+                CupertinoListTile(
+                  title: const Text("Show translations in preview"),
+                  trailing: CupertinoSwitch(
+                    value: translation,
+                    activeTrackColor: CupertinoColors.activeBlue,
+                    onChanged: (bool value) {
+                      setSettingBool(
+                        name: "showTranslations",
+                        type: "bool",
+                        value: value,
+                      );
+                      setState(() => translation = value);
+                    },
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Show pinyin by default"),
-                      CupertinoSwitch(
-                        // This bool value toggles the switch.
-                        value: reviewPinyin,
-                        activeTrackColor: CupertinoColors.activeBlue,
-                        onChanged: (bool value) {
-                          setSettingBool(
-                            name: "show_pinyin_by_default_in_review",
-                            type: "bool",
-                            value: value,
-                          );
-                          setState(() => reviewPinyin = value);
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              Column(
-                children: [
-                  const Text("Learn"),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Show example sentences in unit learn"),
-                      CupertinoSwitch(
-                        // This bool value toggles the switch.
-                        value: showExampleSentences,
-                        activeTrackColor: CupertinoColors.activeBlue,
-                        onChanged: (bool value) {
-                          setSettingBool(
-                            name: "show_sentences",
-                            type: "bool",
-                            value: value,
-                          );
-                          setState(() => showExampleSentences = value);
-                        },
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Show literal meaning in unit learn"),
-                      CupertinoSwitch(
-                        // This bool value toggles the switch.
-                        value: showLiteralInUnitLearn,
-                        activeTrackColor: CupertinoColors.activeBlue,
-                        onChanged: (bool value) {
-                          setSettingBool(
-                            name: "show_literal_meaning_in_unit_learn",
-                            type: "bool",
-                            value: value,
-                          );
-                          setState(() => showLiteralInUnitLearn = value);
-                        },
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Default course"),
-                      CupertinoButton(
-                        onPressed: () {
-                          _showDefaultCourseActionSheet(context);
-                        },
-                        child: Text(defaultCourse),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Default home page"),
-                      CupertinoButton(
-                        onPressed: () {
-                          _showDefaultHomePageActionSheet(context);
-                        },
-                        child: Text(defaultHomePage),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              Column(
-                children: [
-                  const Text("Theme"),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Dark mode (requires app restart)"),
-                      CupertinoButton(
-                        onPressed: () {
-                          _showThemeSelectionDialog(context);
-                        },
-                        child: Text(switch (SharedPrefs.prefs.getString(
-                          'theme',
-                        )) {
-                          "dark" => "Dark",
-                          "light" => "Light",
-                          _ => "System",
-                        }),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              Column(
-                children: [
-                  const Text("Character View"),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Download character stroke data (30MB)"),
-                      Row(
-                        children: [
-                          CupertinoButton(
-                            onPressed: isDataDownloaded
-                                ? null
-                                : () async {
-                                    setState(() {
-                                      isDownloading = true;
-                                    });
-                                    CharacterStokesSql.createTable()
-                                        .then(
-                                          (value) {
-                                            SharedPrefs.prefs.setBool(
-                                              'character_stroke_data_downloaded',
-                                              true,
-                                            );
-                                            setState(() {
-                                              isDataDownloaded = true;
-                                            });
-                                            showCupertinoDialog(
-                                              barrierDismissible: true,
-                                              context: context,
-                                              builder: (context) {
-                                                return const CupertinoAlertDialog(
-                                                  content: Text(
-                                                    "Download succeeded",
-                                                  ),
-                                                );
-                                              },
-                                            );
-                                          },
-                                          onError: (e) {
-                                            showCupertinoDialog(
-                                              barrierDismissible: true,
-                                              context: context,
-                                              builder: (context) {
-                                                return const CupertinoAlertDialog(
-                                                  content: Text(
-                                                    "Download failed",
-                                                  ),
-                                                );
-                                              },
-                                            );
-                                          },
-                                        )
-                                        .whenComplete(() {
-                                          setState(() {
-                                            isDownloading = false;
-                                          });
-                                        });
-                                  },
-                            child: const Text("Download"),
-                          ),
-                          if (isDownloading)
-                            const CupertinoActivityIndicator(),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Visibility(
-                visible: showDebugOptions,
-                child: Column(
-                  children: [
-                    const Text("debug options"),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("debug mode"),
-                        CupertinoSwitch(
-                          // This bool value toggles the switch.
-                          value: debug,
-                          activeTrackColor: CupertinoColors.activeBlue,
-                          onChanged: (bool value) {
-                            setSettingBool(
-                              name: "debug",
-                              type: "bool",
-                              value: value,
-                            );
-                            setState(() => debug = value);
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("allow skip units"),
-                        CupertinoSwitch(
-                          // This bool value toggles the switch.
-                          value: allowSkipUnits,
-                          activeTrackColor: CupertinoColors.activeBlue,
-                          onChanged: (bool value) {
-                            setSettingBool(
-                              name: "allow_skip_units",
-                              type: "bool",
-                              value: value,
-                            );
-                            setState(() => allowSkipUnits = value);
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("check for new version on start"),
-                        CupertinoSwitch(
-                          // This bool value toggles the switch.
-                          value: checkVersionOnStart,
-                          activeTrackColor: CupertinoColors.activeBlue,
-                          onChanged: (bool value) {
-                            setSettingBool(
-                              name: "check_for_new_version_on_start",
-                              type: "bool",
-                              value: value,
-                            );
-                            setState(() => checkVersionOnStart = value);
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("allow auto complete unit"),
-                        CupertinoSwitch(
-                          // This bool value toggles the switch.
-                          value: allowAutoComplete,
-                          activeTrackColor: CupertinoColors.activeBlue,
-                          onChanged: (bool value) {
-                            setSettingBool(
-                              name: "allow_auto_complete_unit",
-                              type: "bool",
-                              value: value,
-                            );
-                            setState(() => allowAutoComplete = value);
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("Delete stroke data"),
-                        Row(
-                          children: [
-                            CupertinoButton(
-                              onPressed: () async {
-                                setState(() {
-                                  isDeleting = true;
-                                });
-                                CharacterStokesSql.dropTable()
-                                    .then(
-                                      (value) {
-                                        SharedPrefs.prefs.setBool(
-                                          'character_stroke_data_downloaded',
-                                          false,
-                                        );
-                                        showCupertinoDialog(
-                                          barrierDismissible: true,
-                                          context: context,
-                                          builder: (context) {
-                                            return const CupertinoAlertDialog(
-                                              content: Text(
-                                                "Deletion succeeded",
-                                              ),
-                                            );
-                                          },
-                                        );
-                                      },
-                                      onError: (e) {
-                                        showCupertinoDialog(
-                                          barrierDismissible: true,
-                                          context: context,
-                                          builder: (context) {
-                                            return const CupertinoAlertDialog(
-                                              content: Text("Deletion failed"),
-                                            );
-                                          },
-                                        );
-                                      },
-                                    )
-                                    .whenComplete(() {
-                                      setState(() {
-                                        isDeleting = false;
-                                      });
-                                    });
-                              },
-                              child: const Text("Delete"),
-                            ),
-                            if (isDeleting) const CupertinoActivityIndicator(),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("Refresh DB (lose all data)"),
-                        TextButton(
-                          onPressed: isDeleting
-                              ? null
-                              : () async {
-                                  setState(() {
-                                    isDeleting = true;
-                                  });
-                                  await SQLHelper.refreshDB();
-                                  setState(() {
-                                    isDeleting = false;
-                                  });
-                                },
-                          child: const Text("Refresh"),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: () async {
-                            final map = Preferences.getAllPreferences();
-                            print(map);
-                            List settings = [];
-                            map.forEach((k, v) => settings.add([k, v]));
-                            showCupertinoDialog(
-                              barrierDismissible: true,
-                              context: context,
-                              builder: (context) {
-                                return Dialog(
-                                  child: ListView.builder(
-                                    itemCount: settings.length,
-                                    itemBuilder: (
-                                      BuildContext context,
-                                      int index,
-                                    ) {
-                                      return Center(
-                                        child: Text(
-                                          "${settings[index][0]}: ${settings[index][1]}",
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                          child: const Text("Show all settings"),
-                        ),
-                      ],
-                    ),
-                    Visibility(
-                      visible: false, //enable to fetch from db
-                      child: Row(
-                        children: [
-                          const Text("Get latest data"),
-                          IconButton(
-                            onPressed: () async {
-                              Future<bool> updated =
-                                  PgUpdate.updateSqliteFromPg();
-                              updated.then(
-                                (val) => showCupertinoDialog(
-                                  barrierDismissible: true,
-                                  context: context,
-                                  builder: (context) {
-                                    return const CupertinoAlertDialog(
-                                      content: Text("updated: true"),
-                                    );
-                                  },
-                                ),
-                                onError: (e) => showCupertinoDialog(
-                                  barrierDismissible: true,
-                                  context: context,
-                                  builder: (context) {
-                                    return const CupertinoAlertDialog(
-                                      content: Text("updated: false"),
-                                    );
-                                  },
-                                ),
-                              );
-                            },
-                            icon: const Icon(Icons.add),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
                 ),
+                CupertinoListTile(
+                  title: const Text("Show pinyin by default"),
+                  trailing: CupertinoSwitch(
+                    value: reviewPinyin,
+                    activeTrackColor: CupertinoColors.activeBlue,
+                    onChanged: (bool value) {
+                      setSettingBool(
+                        name: "show_pinyin_by_default_in_review",
+                        type: "bool",
+                        value: value,
+                      );
+                      setState(() => reviewPinyin = value);
+                    },
+                  ),
+                ),
+              ],
+            ),
+            CupertinoListSection.insetGrouped(
+              header: const Text("LEARN"),
+              children: [
+                CupertinoListTile(
+                  title: const Text("Show example sentences"),
+                  trailing: CupertinoSwitch(
+                    value: showExampleSentences,
+                    activeTrackColor: CupertinoColors.activeBlue,
+                    onChanged: (bool value) {
+                      setSettingBool(
+                        name: "show_sentences",
+                        type: "bool",
+                        value: value,
+                      );
+                      setState(() => showExampleSentences = value);
+                    },
+                  ),
+                ),
+                CupertinoListTile(
+                  title: const Text("Show literal meaning"),
+                  trailing: CupertinoSwitch(
+                    value: showLiteralInUnitLearn,
+                    activeTrackColor: CupertinoColors.activeBlue,
+                    onChanged: (bool value) {
+                      setSettingBool(
+                        name: "show_literal_meaning_in_unit_learn",
+                        type: "bool",
+                        value: value,
+                      );
+                      setState(() => showLiteralInUnitLearn = value);
+                    },
+                  ),
+                ),
+                CupertinoListTile(
+                  title: const Text("Default home page"),
+                  trailing: const CupertinoListTileChevron(),
+                  additionalInfo: Text(defaultHomePage),
+                  onTap: () => _showDefaultHomePageActionSheet(context),
+                ),
+              ],
+            ),
+            CupertinoListSection.insetGrouped(
+              header: const Text("APPEARANCE"),
+              children: [
+                CupertinoListTile(
+                  title: const Text("Theme"),
+                  trailing: const CupertinoListTileChevron(),
+                  additionalInfo: Text(switch (SharedPrefs.prefs.getString('theme')) {
+                    "dark" => "Dark",
+                    "light" => "Light",
+                    _ => "System",
+                  }),
+                  onTap: () => _showThemeSelectionDialog(context),
+                ),
+              ],
+            ),
+            CupertinoListSection.insetGrouped(
+              header: const Text("DATA"),
+              children: [
+                CupertinoListTile(
+                  title: const Text("Character stroke data (30MB)"),
+                  subtitle: Text(isDataDownloaded ? "Downloaded" : "Not downloaded"),
+                  trailing: isDownloading 
+                    ? const CupertinoActivityIndicator() 
+                    : (isDataDownloaded ? const Icon(CupertinoIcons.check_mark, color: CupertinoColors.activeGreen) : const Icon(CupertinoIcons.cloud_download, color: CupertinoColors.activeBlue)),
+                  onTap: isDataDownloaded || isDownloading ? null : () async {
+                    setState(() => isDownloading = true);
+                    CharacterStokesSql.createTable().then((value) {
+                      SharedPrefs.prefs.setBool('character_stroke_data_downloaded', true);
+                      setState(() => isDataDownloaded = true);
+                    }).whenComplete(() => setState(() => isDownloading = false));
+                  },
+                ),
+              ],
+            ),
+            if (showDebugOptions)
+              CupertinoListSection.insetGrouped(
+                header: const Text("DEBUG OPTIONS"),
+                children: [
+                  CupertinoListTile(
+                    title: const Text("Debug mode"),
+                    trailing: CupertinoSwitch(
+                      value: debug,
+                      onChanged: (bool value) {
+                        setSettingBool(name: "debug", type: "bool", value: value);
+                        setState(() => debug = value);
+                      },
+                    ),
+                  ),
+                  CupertinoListTile(
+                    title: const Text("Allow skip units"),
+                    trailing: CupertinoSwitch(
+                      value: allowSkipUnits,
+                      onChanged: (bool value) {
+                        setSettingBool(name: "allow_skip_units", type: "bool", value: value);
+                        setState(() => allowSkipUnits = value);
+                      },
+                    ),
+                  ),
+                  CupertinoListTile(
+                    title: const Text("Refresh DB"),
+                    onTap: isDeleting ? null : () async {
+                      setState(() => isDeleting = true);
+                      await SQLHelper.refreshDB();
+                      setState(() => isDeleting = false);
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(height: 10),
-            ],
-          ),
+            const SizedBox(height: 40),
+          ],
         ),
       ),
     );
   }
 }
-
-// only for testing, can be deleted
-Map<String, dynamic> currSentence() {
-  //return  {"characters": "她叫什么名字", "pinyin": "tā jiào shénme míngzì", "meaning": "what's her name"};
-  //return {"characters": "我的弟弟想长高", "pinyin": "Wǒ de dìdi xiǎng zhǎng gāo", "meaning": "my younger brother wants to grow taller",};
-  return {
-    "characters": "我爱我的国家，它有很多美丽的河流和公园",
-    "pinyin": "wǒ ài wǒ de guójiā, tā yǒu hěnduō měilì de héliú hé gōngyuán",
-    "meaning":
-        "I love my country, it has many beautiful rivers and parks and more words",
-  };
-}
-
-void sentenceGameCallBack(
-  bool value,
-  Map<String, dynamic> currSentence,
-  bool buildEnglish,
-) {}

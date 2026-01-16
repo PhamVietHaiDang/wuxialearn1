@@ -12,7 +12,6 @@ import '../../widgets/size_transition.dart';
 import '../../utils/styles.dart';
 import '../settings/preferences.dart';
 import 'manage_ratings.dart';
-import 'manage_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ReviewHome extends StatefulWidget {
@@ -53,7 +52,6 @@ class _ReviewHomeState extends State<ReviewHome> {
                   1: Text("Review"),
                   2: Text("Progress"),
                   3: Text("Ratings"),
-                  4: Text("Decks"),
                 },
               ),
             ),
@@ -64,7 +62,6 @@ class _ReviewHomeState extends State<ReviewHome> {
                   ReviewPage(),
                   ReviewProgress(),
                   ManageRatings(),
-                  ManageReview(),
                 ],
               ),
             ),
@@ -106,7 +103,7 @@ class _ReviewPageState extends State<ReviewPage> {
   ];
   List<String> reviewTypeOptions = [flashCardType, quizType];
   List<String> deckSizeOptions = ["Small", "Medium", "Large", "All"];
-  List<String> deckNames = ["hsk", "wuxia"];
+  List<String> deckNames = ["hsk"];
   String deckName = 'hsk';
   String reviewTypeValue = flashCardType;
   String reviewWordsValue = "SRS";
@@ -275,18 +272,6 @@ class _ReviewPageState extends State<ReviewPage> {
                               child: Text(deckSizeValue),
                             ),
                             //DropDown(dropdownOptions: deckSizeOptions, callback: (value) { deckSizeValue = value; })
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text("Deck"),
-                            CupertinoButton(
-                              onPressed: () {
-                                _showReviewDeckActionSheet(context);
-                              },
-                              child: Text(deckName),
-                            ),
                           ],
                         ),
                         CupertinoButton(
@@ -492,32 +477,6 @@ class _ReviewPageState extends State<ReviewPage> {
                     prefs.setString('deckSize', deckSizeValue);
                   },
                   child: Text(deckSizeOptions[index]),
-                );
-              },
-            ),
-          ),
-    );
-  }
-
-  _showReviewDeckActionSheet<bool>(BuildContext context) {
-    showCupertinoModalPopup<bool>(
-      context: context,
-      builder:
-          (BuildContext context) => CupertinoActionSheet(
-            title: const Text('Select a deck'),
-            actions: List<CupertinoActionSheetAction>.generate(
-              deckNames.length,
-              (index) {
-                return CupertinoActionSheetAction(
-                  isDefaultAction: true,
-                  onPressed: () {
-                    Navigator.pop(context, true);
-                    setState(() {
-                      deckName = deckNames[index];
-                    });
-                    prefs.setString('deckName', deckName);
-                  },
-                  child: Text(deckNames[index]),
                 );
               },
             ),

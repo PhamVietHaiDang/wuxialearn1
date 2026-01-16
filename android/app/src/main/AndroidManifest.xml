@@ -6,7 +6,7 @@
         </intent>
     </queries>
     <application
-        android:label="wuxialearn"
+        android:label="HSK learning"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity
